@@ -3,7 +3,13 @@ export default function Hero() {
     <section className="hero" id="hero">
       {/* 시네마틱 배경: 자영업자 → 브랜드 전환 분위기 */}
       <div className="hero-bg-cinematic">
-        <img src="/hero-bg.jpg" alt="" aria-hidden="true" />
+        <video 
+          src="/video/aam-promo.mp4" 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+        />
       </div>
       <div className="veil" />
 

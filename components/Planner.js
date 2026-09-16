@@ -21,9 +21,8 @@ export default function Planner() {
               playsInline
               preload="metadata"
               poster="/hero-bg.jpg"
-              style={{ width: "100%", borderRadius: 14, background: "#000" }}
             >
-              <source src="/video/aam-promo.mp4" type="video/mp4" />
+              <source src="/video/aam-promo-gov.mp4" type="video/mp4" />
             </video>
             <p className="planner-video-caption">
               AAM 홍보영상 — 당신의 사업에는 이미 이야기가 있습니다
