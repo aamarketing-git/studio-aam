@@ -542,12 +542,18 @@ ul { list-style: none; padding: 0; margin: 0; }
 }
 .planner-panel-wrap {
   min-width: 0;
+  height: 100%;
+  display: flex;
 }
 
 .panel {
   background: #fff; color: var(--ink);
   border-radius: 20px; padding: 24px; max-width: 780px; margin: 0 auto;
   box-shadow: 0 25px 60px rgba(27,23,37,.15);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 @media (min-width: 860px) {
   .panel { padding: 32px; }
