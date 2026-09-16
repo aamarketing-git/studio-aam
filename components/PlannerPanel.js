@@ -261,11 +261,34 @@ export default function PlannerPanel({ embedded = true }) {
             </div>
           ) : (
             <div className="lead-form">
-              <h4>접수되었습니다</h4>
-              <p style={{ margin: 0, color: "var(--ink-muted)" }}>
-                기획서를 팀이 확인한 뒤 영업일 기준 1~2일 안에 연락드립니다.
-                그 전에 급하시면 카카오 채널로 바로 말씀해주세요.
+              <h4>상담 접수가 완료되었습니다</h4>
+              <p style={{ margin: "0 0 16px", color: "var(--ink-muted)", lineHeight: 1.6 }}>
+                남겨주신 기획서를 AAM 팀이 꼼꼼히 확인한 뒤, 영업일 기준 1~2일 내에 연락드리겠습니다.<br />
+                작성하신 기획서는 아래 고유 링크를 통해 고객님과 AAM 팀이 언제든 다시 열람할 수 있습니다.
               </p>
+
+              {sessionId && (
+                <div style={{ marginBottom: 20, padding: "12px 16px", background: "var(--surface-container)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", color: "var(--ink)", wordBreak: "break-all" }}>
+                    https://studio-aam.com/plan/{sessionId}
+                  </span>
+                  <button className="btn small ghost" style={{ flexShrink: 0 }} onClick={() => {
+                    navigator.clipboard.writeText(`https://studio-aam.com/plan/${sessionId}`);
+                    alert("링크가 복사되었습니다.");
+                  }}>복사</button>
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {sessionId && (
+                  <a href={`/plan/${sessionId}`} target="_blank" rel="noreferrer" className="btn ghost" style={{ color: "var(--ink)", borderColor: "var(--line)" }}>
+                    저장된 기획서 보기
+                  </a>
+                )}
+                <a href="https://www.studio-aam.com/" target="_blank" rel="noreferrer" className="btn" style={{ background: "#FEE500", color: "#191919", border: "none" }}>
+                  카카오톡 빠른 상담
+                </a>
+              </div>
             </div>
           )}
         </div>
