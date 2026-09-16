@@ -20,7 +20,6 @@ export default function Planner() {
               controls
               playsInline
               preload="metadata"
-              poster="/hero-bg.jpg"
             >
               <source src="/video/aam-promo-gov.mp4" type="video/mp4" />
             </video>
