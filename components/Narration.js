@@ -43,8 +43,8 @@ export default function Narration() {
   useEffect(() => {
     let animationFrameId;
     let globalY = 0; 
-    // 올라가는 속도를 2배 빠르게 (0.15 -> 0.3)
-    const speed = 0.3; 
+    // 기존(0.3)에서 다시 2배 빠르게 속도 상향
+    const speed = 0.6; 
     let isPaused = false;
     let pauseEndTime = 0;
 
