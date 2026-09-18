@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/utils";
 
 const PATH = {
   perspective: 30,
@@ -46,6 +45,7 @@ export function ImageStreamHero({
   path,
   children,
   className,
+  style,
   ...props
 }) {
   const id = React.useId().replace(/[^a-zA-Z0-9]/g, "");
@@ -64,23 +64,33 @@ export function ImageStreamHero({
 
   return (
     <div
-      className={cn("relative overflow-hidden", className)}
+      className={className}
       {...props}
-      style={{ containerType: "inline-size", ...props.style }}
+      style={{ 
+        position: 'relative', 
+        overflow: 'hidden',
+        containerType: "inline-size", 
+        ...style 
+      }}
     >
       <style>{css}</style>
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
         style={{
+          pointerEvents: 'none',
+          position: 'absolute',
+          top: 0, right: 0, bottom: 0, left: 0,
           perspective: `${p.perspective}cqw`,
           perspectiveOrigin: `50% ${axis}%`,
         }}
       >
         <div
-          className="absolute inset-0"
-          style={{ transformStyle: "preserve-3d" }}
+          style={{ 
+            position: 'absolute',
+            top: 0, right: 0, bottom: 0, left: 0,
+            transformStyle: "preserve-3d" 
+          }}
         >
           {[right, left].map((name) =>
             Array.from({ length: cards }, (_, i) => {
@@ -88,8 +98,10 @@ export function ImageStreamHero({
               return (
                 <div
                   key={`${name}-${i}`}
-                  className={cn(card, "absolute overflow-hidden")}
+                  className={card}
                   style={{
+                    position: 'absolute',
+                    overflow: 'hidden',
                     left: "50%",
                     top: `${axis}%`,
                     width: `${p.cardWidth}cqw`,
@@ -108,8 +120,12 @@ export function ImageStreamHero({
                       alt={img.alt ?? ""}
                       loading="lazy"
                       decoding="async"
-                      className="h-full w-full object-cover"
                       draggable={false}
+                      style={{
+                        height: '100%',
+                        width: '100%',
+                        objectFit: 'cover'
+                      }}
                     />
                   ) : null}
                 </div>

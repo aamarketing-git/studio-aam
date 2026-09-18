@@ -57,17 +57,44 @@ export default function Portfolio() {
       */}
       <ImageStreamHero
         images={streamImages}
-        className="h-[600px] w-full"
-        style={{ backgroundColor: '#fdfbf7', borderBottom: '1px solid #eaeaea' }}
+        style={{ 
+          height: '600px', 
+          width: '100%',
+          backgroundColor: '#fdfbf7', 
+          borderBottom: '1px solid #eaeaea' 
+        }}
       >
-        <div className="relative z-10 flex h-full flex-col items-center justify-between py-16 text-center">
-          <div className="px-6 mt-8">
-            <h1 className="text-balance text-4xl font-extrabold tracking-tight text-[#333] sm:text-5xl">
+        <div style={{ 
+          position: 'relative', 
+          zIndex: 10, 
+          display: 'flex', 
+          height: '100%', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          padding: '4rem 0', 
+          textAlign: 'center' 
+        }}>
+          <div style={{ padding: '0 1.5rem', marginTop: '2rem' }}>
+            <h1 style={{ 
+              fontSize: '2.5rem', 
+              fontWeight: 800, 
+              letterSpacing: '-0.025em', 
+              color: '#333',
+              lineHeight: 1.2
+            }}>
               우리가 만들어 온<br />
               브랜드 경험들.
             </h1>
           </div>
-          <p className="max-w-md text-balance px-6 text-sm mb-8" style={{ color: '#666', lineHeight: 1.6 }}>
+          <p style={{ 
+            maxWidth: '28rem', 
+            padding: '0 1.5rem', 
+            fontSize: '0.875rem', 
+            color: '#666', 
+            lineHeight: 1.6,
+            marginBottom: '2rem'
+          }}>
             단순히 화려한 디자인을 넘어서, 브랜드의 진짜 '이야기'가 사람들에게 전달되도록 설계된 작업물들을 만나보세요.
           </p>
         </div>
