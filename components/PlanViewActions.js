@@ -8,7 +8,7 @@ export default function PlanViewActions() {
       <button className="btn ghost dark" style={{ color: "var(--ink)", borderColor: "var(--line)" }} onClick={() => window.print()}>
         인쇄 · PDF로 저장
       </button>
-      <a href="https://www.studio-aam.com/" target="_blank" rel="noreferrer" className="btn" style={{ background: "#FEE500", color: "#191919", border: "none" }}>
+      <a href="http://pf.kakao.com/_axaUrX/chat" target="_blank" rel="noreferrer" className="btn" style={{ background: "#FEE500", color: "#191919", border: "none" }}>
         카카오톡 문의하기
       </a>
     </div>

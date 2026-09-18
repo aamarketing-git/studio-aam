@@ -13,7 +13,7 @@ export default function Contact() {
           <a
             className="btn ghost"
             style={{ color: "#fff", borderColor: "rgba(255,255,255,.6)" }}
-            href="https://pf.kakao.com/_YOUR_CHANNEL"
+            href="http://pf.kakao.com/_axaUrX/chat"
             target="_blank"
             rel="noreferrer"
           >

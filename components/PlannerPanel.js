@@ -285,7 +285,7 @@ export default function PlannerPanel({ embedded = true }) {
                     저장된 기획서 보기
                   </a>
                 )}
-                <a href="https://www.studio-aam.com/" target="_blank" rel="noreferrer" className="btn" style={{ background: "#FEE500", color: "#191919", border: "none" }}>
+                <a href="http://pf.kakao.com/_axaUrX/chat" target="_blank" rel="noreferrer" className="btn" style={{ background: "#FEE500", color: "#191919", border: "none" }}>
                   카카오톡 빠른 상담
                 </a>
               </div>
