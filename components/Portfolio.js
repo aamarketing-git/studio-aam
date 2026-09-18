@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { PORTFOLIO } from "@/lib/portfolio";
+import { ImageStreamHero } from "@/components/ui/image-stream-hero";
 
 function Card({ item, onOpen }) {
   return (
@@ -34,9 +35,45 @@ export default function Portfolio() {
   const [open, setOpen] = useState(null);
   const half = Math.ceil(PORTFOLIO.length / 2);
 
+  // 포트폴리오 데이터에서 이미지들을 추출하여 ImageStreamHero에 전달할 데이터 생성
+  // 각 프로젝트의 메인 썸네일(첫 번째 이미지)들을 모아서 보여줍니다.
+  const streamImages = PORTFOLIO.map(p => ({
+    src: p.images[0],
+    alt: p.title
+  }));
+
+  // 만약 이미지가 부족하다면 서브 이미지들도 추가
+  if (streamImages.length < 8) {
+    PORTFOLIO.forEach(p => {
+      if (p.images[1]) streamImages.push({ src: p.images[1], alt: p.title });
+    });
+  }
+
   return (
-    <section className="section portfolio-section" id="work">
-      <div className="wrap">
+    <section className="section portfolio-section" id="work" style={{ paddingTop: 0 }}>
+      {/* 
+        새롭게 추가된 ImageStreamHero 영역
+        고객님의 실제 작업물 이미지(PORTFOLIO)들이 입체적으로 흘러나옵니다.
+      */}
+      <ImageStreamHero
+        images={streamImages}
+        className="h-[600px] w-full"
+        style={{ backgroundColor: '#fdfbf7', borderBottom: '1px solid #eaeaea' }}
+      >
+        <div className="relative z-10 flex h-full flex-col items-center justify-between py-16 text-center">
+          <div className="px-6 mt-8">
+            <h1 className="text-balance text-4xl font-extrabold tracking-tight text-[#333] sm:text-5xl">
+              우리가 만들어 온<br />
+              브랜드 경험들.
+            </h1>
+          </div>
+          <p className="max-w-md text-balance px-6 text-sm mb-8" style={{ color: '#666', lineHeight: 1.6 }}>
+            단순히 화려한 디자인을 넘어서, 브랜드의 진짜 '이야기'가 사람들에게 전달되도록 설계된 작업물들을 만나보세요.
+          </p>
+        </div>
+      </ImageStreamHero>
+
+      <div className="wrap" style={{ marginTop: '5rem' }}>
         <div className="section-head">
           <p className="label">Selected Works</p>
           <h2>이미 만들어 온 것들</h2>
