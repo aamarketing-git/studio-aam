@@ -43,8 +43,8 @@ export default function Narration() {
   useEffect(() => {
     let animationFrameId;
     let globalY = 0; 
-    // 기존 1.5에서 0.35로 속도를 대폭 낮춰서 물 흐르듯 잔잔하게 올라가도록 설정
-    const speed = 0.35; 
+    // 올라가는 속도를 기존(0.35)의 절반 이하인 0.15로 대폭 늦춤
+    const speed = 0.15; 
     let isPaused = false;
     let pauseEndTime = 0;
 
@@ -77,15 +77,14 @@ export default function Narration() {
 
         let scale = 1;
         let color = '#333';
-        let opacity = 0.15; // 기본적으로 화면 위아래에서는 아주 흐리게 대기
+        let opacity = 0.15;
 
-        // 중앙 부분(거리 200px 이내)에 서서히 다가올 때
-        if (dist < 180) {
-          scale = 2;         // 정확히 2배로 확대
-          color = '#0055ff'; // 잔잔한 블루 색상
-          opacity = 1;       // 선명해짐
-        } else if (dist < 400) {
-          // 중앙으로 다가오거나 멀어지는 중일 때
+        // 중앙 영역을 넉넉히 잡음 (거대한 글씨에 맞춤)
+        if (dist < 280) {
+          scale = 2;         
+          color = '#0055ff'; 
+          opacity = 1;       
+        } else if (dist < 500) {
           opacity = 0.5;
         }
 
@@ -143,14 +142,14 @@ export default function Narration() {
           }
           .text-3d {
             font-weight: 800;
-            /* 기본 글자 크기를 키웠습니다. 여기서 2배 커지면 아주 거대해집니다. */
-            font-size: 1.8rem; 
+            /* 기존 1.8rem에서 약 2배 가까운 3.5rem으로 대폭 확대 */
+            font-size: 3.5rem; 
             text-align: center;
-            /* 글자가 2배로 커질 때 겹치지 않도록 간격을 넉넉히 주었습니다. */
-            margin: 3.5rem 0; 
-            line-height: 1.5;
-            letter-spacing: -1px;
-            /* 물이 흐르듯 천천히 부드럽게 색상/크기가 전환되도록 시간을 1.5초로 길게 설정 */
+            /* 글자가 2배(7rem)로 커질 때 겹치지 않도록 간격 대폭 추가 */
+            margin: 7rem 0; 
+            line-height: 1.4;
+            letter-spacing: -2px;
+            /* 부드러운 전환 효과 유지 */
             transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
             transform-origin: center center;
             
@@ -170,12 +169,12 @@ export default function Narration() {
               0 20px 20px rgba(0,0,0,.15);
           }
           .text-empty {
-            height: 6rem; /* 문단 간 여백도 더 넓게 */
+            height: 8rem; /* 문단 간 여백도 더 넓게 */
           }
           @media (max-width: 768px) {
             .text-3d {
-              font-size: 1.2rem;
-              margin: 2.5rem 0;
+              font-size: 2rem;
+              margin: 4rem 0;
             }
           }
         `}
