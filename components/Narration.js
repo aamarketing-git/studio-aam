@@ -42,8 +42,9 @@ export default function Narration() {
 
   useEffect(() => {
     let animationFrameId;
-    let globalY = 0; // 0이면 top: 100% 이므로 화면 최하단 밖에서 시작됨
-    const speed = 1.5; // 스크롤 속도
+    let globalY = 0; 
+    // 기존 1.5에서 0.35로 속도를 대폭 낮춰서 물 흐르듯 잔잔하게 올라가도록 설정
+    const speed = 0.35; 
     let isPaused = false;
     let pauseEndTime = 0;
 
@@ -52,7 +53,6 @@ export default function Narration() {
 
       if (isPaused) {
         if (now >= pauseEndTime) {
-          // 5초 정지 후 처음부터 다시 시작
           isPaused = false;
           globalY = 0; 
         }
@@ -61,56 +61,41 @@ export default function Narration() {
       }
 
       if (containerRef.current) {
-        // 전체 컨테이너를 기울인 상태에서 위로 스크롤
-        containerRef.current.style.transform = `rotateX(40deg) translateY(${-globalY}px)`;
+        // 3D 기울기를 너무 눕히지 않고 살짝만 주어 자연스러운 공간감 부여
+        containerRef.current.style.transform = `rotateX(20deg) translateY(${-globalY}px)`;
       }
 
       const screenCenter = window.innerHeight / 2;
       let lastLineReachedCenter = false;
 
-      // 각 줄의 화면상 위치를 계산하여 중앙에 왔을 때 효과 부여
       linesRef.current.forEach((lineNode, index) => {
         if (!lineNode) return;
 
         const rect = lineNode.getBoundingClientRect();
-        // 각 줄의 Y축 중앙값
         const lineCenter = rect.top + rect.height / 2;
-        // 화면 중앙과의 거리
         const dist = Math.abs(lineCenter - screenCenter);
 
         let scale = 1;
         let color = '#333';
-        let textShadowColor = '#ccc';
+        let opacity = 0.15; // 기본적으로 화면 위아래에서는 아주 흐리게 대기
 
-        // 화면 중앙 부근(거리 120 이내)에 진입하면 2배 커지고 파란색으로 전환
-        if (dist < 120) {
-          scale = 2;
-          color = '#0055ff'; // 블루
-          textShadowColor = '#b3ccff'; // 그림자도 살짝 푸른빛이 돌게 변경
+        // 중앙 부분(거리 200px 이내)에 서서히 다가올 때
+        if (dist < 180) {
+          scale = 2;         // 정확히 2배로 확대
+          color = '#0055ff'; // 잔잔한 블루 색상
+          opacity = 1;       // 선명해짐
+        } else if (dist < 400) {
+          // 중앙으로 다가오거나 멀어지는 중일 때
+          opacity = 0.5;
         }
 
         lineNode.style.transform = `scale(${scale})`;
         lineNode.style.color = color;
-        // 동적 그림자 색상 적용 (기본 3D 입체 유지)
-        lineNode.style.textShadow = `
-          0 1px 0 ${textShadowColor}, 
-          0 2px 0 #c9c9c9, 
-          0 3px 0 #bbb, 
-          0 4px 0 #b9b9b9, 
-          0 5px 0 #aaa, 
-          0 6px 1px rgba(0,0,0,.1), 
-          0 0 5px rgba(0,0,0,.1), 
-          0 1px 3px rgba(0,0,0,.3), 
-          0 3px 5px rgba(0,0,0,.2), 
-          0 5px 10px rgba(0,0,0,.25), 
-          0 10px 10px rgba(0,0,0,.2), 
-          0 20px 20px rgba(0,0,0,.15)
-        `;
+        lineNode.style.opacity = opacity;
 
-        // 마지막 문장 체크 (LINES의 마지막 인덱스)
         const isLastLine = index === LINES.length - 1;
         
-        // 마지막 줄이 화면 중앙에 도달하면 일시정지 (오차 범위 보정)
+        // 마지막 문장이 중앙에 도착했을 때
         if (isLastLine && !isPaused && lineCenter <= screenCenter + 2 && lineCenter > 0) {
           lastLineReachedCenter = true;
         }
@@ -118,13 +103,12 @@ export default function Narration() {
 
       if (lastLineReachedCenter) {
         isPaused = true;
-        pauseEndTime = Date.now() + 5000; // 5초간 정지
+        pauseEndTime = Date.now() + 5000; // 5초 정지
       }
 
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    // 초기 마운트 시 애니메이션 시작
     animationFrameId = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(animationFrameId);
@@ -141,7 +125,7 @@ export default function Narration() {
         justifyContent: 'center',
         overflow: 'hidden',
         background: '#fdfbf7', 
-        perspective: '800px', 
+        perspective: '1000px', 
         position: 'relative'
       }}
     >
@@ -154,26 +138,44 @@ export default function Narration() {
             transform-style: preserve-3d;
             width: 100%;
             position: absolute;
-            top: 100%; /* 첫 문장이 화면 맨 아래 밖에서 시작하도록 설정 */
-            padding-bottom: 50vh; /* 마지막 문장이 중앙에 올 수 있도록 하단 여백 추가 */
+            top: 100%; 
+            padding-bottom: 50vh; 
           }
           .text-3d {
             font-weight: 800;
-            font-size: 1.5rem;
+            /* 기본 글자 크기를 키웠습니다. 여기서 2배 커지면 아주 거대해집니다. */
+            font-size: 1.8rem; 
             text-align: center;
-            margin: 1.5rem 0;
-            line-height: 1.4;
-            letter-spacing: -0.5px;
-            /* 크기와 색상이 변할 때 부드럽게 전환되도록 CSS Transition 설정 */
-            transition: all 0.4s ease-out; 
+            /* 글자가 2배로 커질 때 겹치지 않도록 간격을 넉넉히 주었습니다. */
+            margin: 3.5rem 0; 
+            line-height: 1.5;
+            letter-spacing: -1px;
+            /* 물이 흐르듯 천천히 부드럽게 색상/크기가 전환되도록 시간을 1.5초로 길게 설정 */
+            transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
             transform-origin: center center;
+            
+            /* CSS 3D 입체 폰트(두께감) */
+            text-shadow: 
+              0 1px 0 #ccc, 
+              0 2px 0 #c9c9c9, 
+              0 3px 0 #bbb, 
+              0 4px 0 #b9b9b9, 
+              0 5px 0 #aaa, 
+              0 6px 1px rgba(0,0,0,.1), 
+              0 0 5px rgba(0,0,0,.1), 
+              0 1px 3px rgba(0,0,0,.3), 
+              0 3px 5px rgba(0,0,0,.2), 
+              0 5px 10px rgba(0,0,0,.25), 
+              0 10px 10px rgba(0,0,0,.2), 
+              0 20px 20px rgba(0,0,0,.15);
           }
           .text-empty {
-            height: 5rem; /* 문단 간 여백 */
+            height: 6rem; /* 문단 간 여백도 더 넓게 */
           }
           @media (max-width: 768px) {
             .text-3d {
-              font-size: 1rem;
+              font-size: 1.2rem;
+              margin: 2.5rem 0;
             }
           }
         `}
