@@ -5,7 +5,7 @@ const LINKS = [
   { href: "#film", label: "이야기" },
   { href: "#work", label: "포트폴리오" },
   { href: "#planner", label: "AI 기획실" },
-  { href: "#team", label: "팀" },
+  { href: "#method", label: "팀" },
   { href: "#process", label: "진행방식" },
 ];
 

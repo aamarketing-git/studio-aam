@@ -356,6 +356,62 @@ ul { list-style: none; padding: 0; margin: 0; }
 }
 .step h3 { font-size: 21px; margin-bottom: 10px; }
 .step p { color: var(--ink-muted); font-size: 16px; margin: 0; line-height: 1.7; }
+
+/* 모션 블러 패널 (Remotion Trail 스타일) */
+.mb-panel {
+  position: relative;
+  aspect-ratio: 380 / 400;
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(124, 92, 224, .35), transparent 60%),
+    linear-gradient(160deg, #241d36 0%, var(--night) 70%);
+  box-shadow: 0 18px 40px -24px rgba(27, 23, 37, .6);
+  transition: transform .4s ease, box-shadow .4s ease;
+}
+.mb-panel:hover { transform: translateY(-4px); box-shadow: 0 26px 50px -24px rgba(27, 23, 37, .7); }
+.mb-stage { position: absolute; inset: 0; }
+.mb-layer { position: absolute; inset: 0; will-change: transform; }
+.mb-card {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 58%;
+  aspect-ratio: 3 / 2;
+  border-radius: 22px;
+  background: #ffc93c;
+  color: #1b1725;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3vw, 40px);
+  font-weight: 900;
+  will-change: transform;
+}
+.step .mb-hook {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 20px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(17px, 1.6vw, 21px);
+  font-weight: 700;
+  line-height: 1.4;
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .5);
+}
+.step .mb-hook::before {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 2px;
+  margin-bottom: 10px;
+  background: #ffc93c;
+}
 .flow-note {
   margin-top: 56px;
   font-family: var(--font-display);
@@ -363,6 +419,16 @@ ul { list-style: none; padding: 0; margin: 0; }
   text-align: center;
   color: var(--ink-muted);
 }
+.flow-note strong { color: var(--ink); font-weight: 700; }
+.flow-note span {
+  display: block;
+  margin-top: 10px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ink-muted);
+}
+.method-head { max-width: 46ch; }
+.method-head p { line-height: 1.75; }
 
 /* ── 포트폴리오 마키 ────────────────────── */
 .portfolio-section { border-top: 1px solid var(--line); }
