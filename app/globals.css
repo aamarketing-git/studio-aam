@@ -862,3 +862,30 @@ ul { list-style: none; padding: 0; margin: 0; }
   opacity: 1;
   transform: none;
 }
+
+/* ── AI 마케팅 체험 (AiMarketingLab) ── snsai-lab ── */
+.lab { background: var(--night); color: #f3effb; }
+.lab .label { color: var(--lavender-dim); }
+.lab-head { max-width: 46ch; }
+.lab-head h2 { color: #fff; }
+.lab-head p { color: rgba(243, 239, 251, .72); }
+.lab-features { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.lab-card {
+  display: flex; flex-direction: column; gap: 8px; padding: 24px 22px; border-radius: 20px;
+  background: rgba(255, 255, 255, .04); border: 1px solid rgba(205, 189, 255, .18);
+  transition: transform .3s ease, border-color .3s ease, background .3s ease;
+}
+.lab-card:hover { transform: translateY(-4px); border-color: var(--lavender-dim); background: rgba(124, 92, 224, .12); }
+.lab-card h3 { font-size: 19px; color: #fff; }
+.lab-card p { margin: 0; font-size: 14px; line-height: 1.65; color: rgba(243, 239, 251, .68); flex: 1; }
+.lab-no { font-family: var(--font-mono); font-size: 12px; color: var(--lavender-dim); }
+.lab-open { font-size: 13px; font-weight: 600; color: var(--lavender-dim); opacity: .7; transition: opacity .2s; }
+.lab-card:hover .lab-open { opacity: 1; }
+.lab-modes { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 28px; }
+.lab-mode { padding: 20px 22px; border-radius: 16px; border: 1px dashed rgba(205, 189, 255, .25); }
+.lab-mode h4 { margin: 0 0 6px; font-size: 15px; color: var(--lavender-fixed); }
+.lab-mode p { margin: 0; font-size: 14px; line-height: 1.65; color: rgba(243, 239, 251, .66); }
+.lab-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 44px; }
+.lab-link { font-size: 14px; color: rgba(243, 239, 251, .75); text-decoration: underline; text-underline-offset: 4px; }
+.lab-link:hover { color: #fff; }
+/* ── /snsai-lab ── */
