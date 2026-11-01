@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SNS AI 마케팅 자동화</title>
+<meta name="description" content="유튜브 벤치마킹 분석부터 숏폼 기획·나레이션·영상 제작·업로드, SNS·블로그·뉴스레터 마케팅까지 내 Gemini API 키로 한 번에 자동화합니다.">
+<meta name="theme-color" content="#021114">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235eead4'/%3E%3Cstop offset='1' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M26 20l18 12-18 12z' fill='%23042f2e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="bg" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#" aria-label="홈">
+      <span class="logo" id="brandLogo">SA</span>
+      <span><h1 id="brandName">SNS AI 마케팅 자동화</h1><small id="brandTag"></small></span>
+    </a>
+    <nav class="nav" id="nav" aria-label="작업 단계"></nav>
+    <div class="top-actions">
+      <button class="pill" id="keyPill" type="button" title="API 키 설정"><span class="dot"></span>API 키</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="info-banner" id="keyBanner" hidden>
+    <p>🔑 <b>내 Gemini API 키</b>를 등록하면 분석 · 기획 · 이미지 · 나레이션 · 마케팅이 모두 활성화됩니다. 키는 이 브라우저에만 저장됩니다.</p>
+    <div class="row">
+      <a class="btn btn-sm" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">무료 키 발급 ↗</a>
+      <button class="btn btn-sm btn-primary" id="bannerKeyBtn" type="button">API 키 등록</button>
+    </div>
+  </div>
+  <main id="panes"></main>
+</div>
+
+<footer class="foot" id="footer"></footer>
+<div class="toast" id="toast"></div>
+
+<!-- 설정 → 코어 → 각 탭 모듈 순서로 로드 (file:// 로 열어도 동작하도록 일반 스크립트 사용) -->
+<script src="config.js"></script>
+<script src="js/core.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/channel.js"></script>
+<script src="js/analyze.js"></script>
+<script src="js/plan.js"></script>
+<script src="js/produce.js"></script>
+<script src="js/marketing.js"></script>
+</body>
+</html>
