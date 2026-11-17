@@ -16,32 +16,33 @@ export default function Hero() {
       <div className="hero-center">
         <div className="category-badge">
           <span className="dot" />
-          소상공인 · 독립 브랜드를 위한 서사 기반 크리에이티브 스튜디오
+          웹·앱 · 3D 쇼룸 · 영상 · AI 직원 · 대만 마케팅까지
         </div>
 
         <h1 className="hero-headline">
-          <span className="hero-dim">홈페이지도 만들었고, SNS도 하고 있는데</span>
+          <span className="hero-dim">단순한 홈페이지가 아닙니다</span>
           <span className="hero-main">
-            왜 고객은 우리를
+            직접 일하고 파는
             <br />
-            기억하지 못할까요?
+            우리 브랜드 웹과 AI 직원
           </span>
         </h1>
 
         <p className="hero-sub">
-          AAM은 &lsquo;무엇을 만들까&rsquo;보다 &lsquo;무엇을 이야기할까&rsquo;에서 시작합니다.
+          스토리 기획부터 웹·앱·3D 쇼룸·홍보영상 제작, AI 업무 자동화와 대만 진출·유통 연결까지
+          AAM이 한 번에 세팅합니다.
         </p>
 
         <div className="hero-actions">
-          <a className="btn" href="#planner">7분 만에 내 브랜드 기획받기</a>
-          <a className="btn ghost dark" href="#film">이야기 읽기</a>
+          <a className="btn" href="#portfolio">작업물 바로 보기</a>
+          <a className="btn ghost dark" href="#planner">7분 만에 내 브랜드 기획받기</a>
         </div>
       </div>
 
       <div className="hero-bottom">
         <span>AAM STUDIO / SEOUL</span>
-        <a className="scroll-hint" href="#film">
-          아래로 내려 이야기를 읽어보세요 ↓
+        <a className="scroll-hint" href="#portfolio">
+          아래로 내려 실제 작업물을 확인해 보세요 ↓
         </a>
       </div>
     </section>

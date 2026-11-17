@@ -24,8 +24,17 @@ const STEPS = [
     icon: <MonitorSmartphone size={26} strokeWidth={2.2} />,
     hook: "가게 문을 닫아도, 웹은 일합니다",
     title: "웹이 연결하고, AI가 관리합니다",
-    body: "스토리와 영상이 살아 있는 웹을 만들고, 문의·예약·주문 응대는 AI 자동화가 맡습니다.",
+    body: "스토리와 영상이 살아 있는 웹·앱을 만들고, 문의·예약·주문 응대는 AI 자동화가 맡습니다. 만든 브랜드가 실제로 팔리도록 유통과 대만 진출까지 이어서 연결합니다.",
   },
+];
+
+const SCOPE = [
+  "웹·앱 제작",
+  "3D 쇼룸",
+  "숏폼 · 홍보영상",
+  "AI 직원 · 업무 자동화",
+  "유통 · 총판 연결",
+  "대만 현지 마케팅",
 ];
 
 export default function Approach() {
@@ -37,7 +46,8 @@ export default function Approach() {
           <h2>세 개의 틀이, 한 번에 돌아갑니다</h2>
           <p>
             작가의 스토리에서 영상 제작자의 영상이 탄생하고, 사장님 가게의 브랜딩은 웹 자동화로
-            이어집니다. 따로 맡기면 따로 놀던 세 가지가, 하나의 흐름으로 함께 움직입니다.
+            이어집니다. 따로 맡기면 따로 놀던 세 가지가, 하나의 흐름으로 함께 움직이고, 그 끝에
+            유통과 대만 현지 마케팅까지 붙습니다.
           </p>
         </div>
         <div className="steps">
@@ -49,6 +59,11 @@ export default function Approach() {
               <h3>{s.title}</h3>
               <p>{s.body}</p>
             </div>
+          ))}
+        </div>
+        <div className="scope-chips">
+          {SCOPE.map((s) => (
+            <span key={s}>{s}</span>
           ))}
         </div>
         <p className="flow-note">

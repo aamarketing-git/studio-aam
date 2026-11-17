@@ -158,7 +158,7 @@ export default function PlannerPanel({ embedded = true }) {
         </div>
         <div className="intro-actions">
           <button className="btn" onClick={begin}>기획 시작하기</button>
-          <a className="btn ghost" href="#work" style={{ color: "var(--ink)" }}>작업물 먼저 보기</a>
+          <a className="btn ghost" href="#portfolio" style={{ color: "var(--ink)" }}>작업물 먼저 보기</a>
           <a className="btn ghost" href="#contact" style={{ color: "var(--ink)" }}>상담 먼저 신청하기</a>
         </div>
       </div>

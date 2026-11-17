@@ -43,11 +43,12 @@ GitHub에 올리고 Vercel에서 Import → 환경변수 5개를 그대로 입�
 |---|---|
 | 히어로 루프 영상 (12~15초, 무음) | `public/video/hero-loop.mp4` |
 | 나레이션 본편 (55~70초) | `public/video/film.mp4` + `components/Narration.js` 주석 해제 |
-| 작업물 이미지 3~4컷 × 건수 | `public/shots/` |
-| 작업물 설명 (누가·기능·무엇을 만들 수 있나) | `lib/portfolio.js` |
+| ~~작업물 이미지 3~4컷 × 건수~~ (완료 — 실사이트 캡처 14장) | `public/shots/` |
+| ~~작업물 설명~~ (완료 — 실제 운영 7건) | `lib/portfolio.js` |
 | 팀 사진 3장 | `public/team/` |
 | 카카오 채널 주소 | `components/Contact.js` |
-| 사업자 정보 | `components/Footer.js` |
+| ~~사업자 정보~~ (완료 — (주)얼어바웃마케팅) | `components/Footer.js` |
+| ~~개인정보처리방침~~ (완료 — 초안, 배포 전 대표 확인 권장) | `app/privacy/page.js` |
 | OG 이미지 (카톡 공유 썸네일) | `public/og.png` |
 
 포트폴리오는 `lib/portfolio.js` 배열에 한 줄 추가하면 슬라이더와 상세창에 동시에 반영된다.

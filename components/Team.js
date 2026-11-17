@@ -8,15 +8,15 @@ const MEMBERS = [
   },
   {
     name: "고혁주",
-    role: "영상 PD",
+    role: "총괄이사 · 영상 PD",
     photo: "https://lh3.googleusercontent.com/aida/AEtjO1WoaEX8A_lBIUSoi90GyWutPfnl0YdDprW4wL7xOCOXdGw1bMQ3Y1dhl43_SVx8sjGorcPdULJQy2gboknXtq-GDggDxUWji76kIKcNWdo0Bk2b_5um6UNr8xHT9hhCT_MOCoVLcjwQkQlw633QdXv1sOVbbWXWGzsV-QvkgYaWVvIr3KvTIcieZrdTByFp2DSeRdu_2r1TCleDZf1WwFEOqnCYDEDt0yFkPpj78J_D6GEwUWtqYura1g",
-    body: "그 이야기를 보이게 만드는 사람입니다. 촬영과 AI 제작을 함께 써서 빠르게 만들되 톤은 지킵니다.",
+    body: "그 이야기를 보이게 만드는 사람입니다. 촬영과 AI 영상 제작을 총괄하고, 대만 현지에 머물며 통역과 대만 진출 마케팅의 다리를 놓습니다.",
   },
   {
     name: "이소영",
-    role: "웹 제작 · 기획",
+    role: "웹·AI 구축 · 사업총괄",
     photo: "https://lh3.googleusercontent.com/aida/AEtjO1X0wK22HuRxEIDdg92mGSoMbMEJ-kpuEz1uovLXMZ8NeQ0lHkSGf_d7gJqqNleCXuKF0mqH_6t8EJ4vAD3Xzva3VynjrwSR6Sfonte-qbA7_bw5Ep19_HuaoDmo45tP9vZsOJCRLbzT2YPFSpnLA1eMfvwJ0bNY5q6y2FnEi6FaEonk_b2TBuILZ5UvwlLC6pYWT927JYfUkSe21HsA566etgsSdwDHPhuABOTupMTuvrC43hWMgD4CEK4",
-    body: "이야기가 살아 있는 웹으로 연결하는 사람입니다. 직접 장사와 운영을 해봤기 때문에, 매출이 안 나올 때의 답답함을 압니다.",
+    body: "이야기가 실제 매출로 이어지게 만드는 사람입니다. 웹·앱·숏폼·AI 자동화를 직접 만들고, 알프스(AL.F.S) 같은 브랜드 커머스와 유통을 운영하며 검증한 방식으로 브랜드를 세웁니다.",
   },
 ];
 

@@ -15,9 +15,9 @@ export default function Page() {
     <main>
       <Navbar />
       <Hero />
+      <Portfolio />
       <Narration />
       <Approach />
-      <Portfolio />
       <Planner />
       <AiMarketingLab />
       <Process />

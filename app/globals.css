@@ -215,6 +215,8 @@ ul { list-style: none; padding: 0; margin: 0; }
   color: rgba(202,196,214,.85);
   letter-spacing: 0.02em;
   margin-bottom: 36px;
+  max-width: 100%;
+  text-align: left;
 }
 .hero .category-badge .dot {
   width: 6px; height: 6px;
@@ -250,15 +252,16 @@ ul { list-style: none; padding: 0; margin: 0; }
 .hero-main {
   display: block;
   font-family: var(--font-hero);
-  font-size: clamp(52px, 11vw, 108px);
+  /* 새 문구(두 줄 모두 김)에 맞춰 한 줄이 1200px 컨테이너를 넘지 않게 조정 */
+  font-size: clamp(30px, 6.6vw, 76px);
   font-weight: 700;
   letter-spacing: -0.04em;
-  line-height: 1.15;
+  line-height: 1.18;
   color: #4A90E2;
 }
 
 .hero-sub {
-  max-width: 36ch;
+  max-width: 46ch;
   color: rgba(228,224,240,.85);
   font-size: clamp(16px, 1.8vw, 19px);
   line-height: 1.8;
@@ -412,6 +415,23 @@ ul { list-style: none; padding: 0; margin: 0; }
   margin-bottom: 10px;
   background: #ffc93c;
 }
+.scope-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 44px;
+}
+.scope-chips span {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-muted);
+}
 .flow-note {
   margin-top: 56px;
   font-family: var(--font-display);
@@ -449,7 +469,7 @@ ul { list-style: none; padding: 0; margin: 0; }
 }
 .work:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(27,23,37,.08); }
 .work .thumb {
-  aspect-ratio: 4/3;
+  aspect-ratio: 16/10;
   background: var(--surface-container) center/cover no-repeat;
   display: block;
   border-radius: 10px;
@@ -507,7 +527,7 @@ ul { list-style: none; padding: 0; margin: 0; }
 .modal h3 { font-size: 28px; margin-bottom: 6px; letter-spacing: -0.02em; }
 .modal .tag { color: var(--ink-muted); font-size: 15px; margin-bottom: 24px; }
 .modal .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 28px; }
-.modal .shots img { width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block; aspect-ratio: 4/3; object-fit: cover; }
+.modal .shots img { width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block; aspect-ratio: 16/10; object-fit: cover; }
 .modal .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
 @media (max-width: 600px) {
   .modal .info-grid { grid-template-columns: 1fr; }

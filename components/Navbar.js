@@ -2,12 +2,12 @@
 import { useEffect, useState } from "react";
 
 const LINKS = [
+  { href: "#portfolio", label: "포트폴리오" },
   { href: "#film", label: "이야기" },
-  { href: "#work", label: "포트폴리오" },
+  { href: "#method", label: "AAM 방식" },
   { href: "#planner", label: "AI 기획실" },
   { href: "#ai-lab", label: "AI 마케팅 체험" },
-  { href: "#method", label: "팀" },
-  { href: "#process", label: "진행방식" },
+  { href: "#process", label: "진행순서" },
 ];
 
 export default function Navbar() {

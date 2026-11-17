@@ -50,7 +50,7 @@ export default function Portfolio() {
   }
 
   return (
-    <section className="section portfolio-section" id="work" style={{ paddingTop: 0 }}>
+    <section className="section portfolio-section" id="portfolio" style={{ paddingTop: 0 }}>
       {/* 
         새롭게 추가된 ImageStreamHero 영역
         고객님의 실제 작업물 이미지(PORTFOLIO)들이 입체적으로 흘러나옵니다.
