@@ -3,6 +3,8 @@ import Hero from "@/components/Hero";
 import Narration from "@/components/Narration";
 import Approach from "@/components/Approach";
 import Portfolio from "@/components/Portfolio";
+import FilmPortfolio from "@/components/FilmPortfolio";
+import ShowroomThreeD from "@/components/ShowroomThreeD";
 import Planner from "@/components/Planner";
 import AiMarketingLab from "@/components/AiMarketingLab";
 import Process from "@/components/Process";
@@ -16,6 +18,8 @@ export default function Page() {
       <Navbar />
       <Hero />
       <Portfolio />
+      <FilmPortfolio />
+      <ShowroomThreeD />
       <Narration />
       <Approach />
       <Planner />

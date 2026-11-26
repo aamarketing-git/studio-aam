@@ -147,7 +147,7 @@
       if (this._mem) return this._mem;
       let v = App.store.get(KEY_STORE);
       if (!v) { try { v = JSON.parse(sessionStorage.getItem(P + KEY_STORE) || 'null'); } catch {} }
-      this._mem = Object.assign({ gemini: '', youtube: '', oauth: '', model: '', voiceServer: '', voiceEngine: '', voiceProxy: '', dsKey: '', dsWorkspace: '', dsRegion: 'ap-southeast-1', dsModel: '',
+      this._mem = Object.assign({ gemini: '', openai: '', anthropic: '', youtube: '', oauth: '', model: '', openaiModel: '', claudeModel: '', openaiImageModel: '', voiceServer: '', voiceEngine: '', voiceProxy: '', dsKey: '', dsWorkspace: '', dsRegion: 'ap-southeast-1', dsModel: '',
         llmEngine: '', llmBackend: 'auto', lmstudioUrl: '', ollamaUrl: '', lmstudioModel: '', ollamaModel: '', lmstudioToken: '', remember: false }, v || {});
       return this._mem;
     },
@@ -155,9 +155,15 @@
       this._mem = Object.assign(this.load(), v);
       if (this._mem.remember) { App.store.set(KEY_STORE, this._mem); sessionStorage.removeItem(P + KEY_STORE); }
       else { App.store.del(KEY_STORE); sessionStorage.setItem(P + KEY_STORE, JSON.stringify(this._mem)); }
-      App.ai.reset(); App.local && App.local.reset(); App.emit('settings', this._mem);
+      App.ai.reset(); App.ai._fallback = false; App.local && App.local.reset(); App.emit('settings', this._mem);
     },
     get gemini() { return this.load().gemini.trim(); },
+    // 방문자 본인 키 — ChatGPT(OpenAI) · Claude(Anthropic)
+    get openai() { return (this.load().openai || '').trim(); },
+    get anthropic() { return (this.load().anthropic || '').trim(); },
+    get openaiModel() { return (this.load().openaiModel || (C.cloudAI && C.cloudAI.openaiModel) || 'gpt-4o-mini').trim(); },
+    get claudeModel() { return (this.load().claudeModel || (C.cloudAI && C.cloudAI.claudeModel) || 'claude-sonnet-4-5').trim(); },
+    get openaiImageModel() { return (this.load().openaiImageModel || (C.cloudAI && C.cloudAI.openaiImageModel) || 'gpt-image-1').trim(); },
     get youtube() { return (this.load().youtube || '').trim(); },
     get oauth() { return (this.load().oauth || '').trim(); },
     get voiceServer() { return ((this.load().voiceServer || C.voiceServer || 'http://127.0.0.1:8805').trim()).replace(/\/+$/, ''); },
@@ -168,17 +174,27 @@
     get dsWorkspace() { return (this.load().dsWorkspace || '').trim(); },
     get dsRegion() { return this.load().dsRegion || 'ap-southeast-1'; },
     get dsModel() { return (this.load().dsModel || C.cloudVoiceModel || 'qwen-audio-3.1-tts-flash').trim(); },
-    // 텍스트 AI 엔진: 'gemini' | 'local'(LM Studio · Ollama)
+    // 텍스트 AI 엔진: 'gemini' | 'openai'(ChatGPT) | 'claude'(Anthropic) | 'local'(LM Studio · Ollama)
     get llmEngine() { return this.load().llmEngine || (C.localLLM && C.localLLM.defaultEngine) || 'gemini'; },
     get llmBackend() { return this.load().llmBackend || 'auto'; },
     get lmstudioUrl() { return ((this.load().lmstudioUrl || (C.localLLM && C.localLLM.lmstudioUrl) || 'http://127.0.0.1:1234').trim()).replace(/\/+$/, '').replace(/\/v1$/, ''); },
     get ollamaUrl() { return ((this.load().ollamaUrl || (C.localLLM && C.localLLM.ollamaUrl) || 'http://127.0.0.1:11434').trim()).replace(/\/+$/, ''); },
   };
-  /** kind='text' → 로컬 LLM 모드면 Gemini 키 없이 통과 (영상 분석 · 이미지 · Gemini 음성은 항상 키 필요) */
+  /** kind='text' → 선택한 엔진(로컬 LLM · ChatGPT · Claude · Gemini) 키만 있으면 통과
+      그 외(영상 직접 분석 · 이미지 · Gemini 음성)는 항상 Gemini 키 필요 */
   App.requireKey = (kind) => {
-    if (kind === 'text' && App.settings.llmEngine === 'local') return true;
+    const eng = App.settings.llmEngine;
+    if (kind === 'text') {
+      const own = eng === 'local' ? true : eng === 'openai' ? !!App.settings.openai : eng === 'claude' ? !!App.settings.anthropic : !!App.settings.gemini;
+      if (own) return true;
+      if (App.settings.gemini) return true; // 선택 엔진 키가 없으면 Gemini로 대체
+      const need = eng === 'openai' ? 'ChatGPT(OpenAI)' : eng === 'claude' ? 'Claude(Anthropic)' : 'Gemini';
+      App.toast(`먼저 ${need} API 키를 등록하거나, 설정에서 다른 엔진 · 로컬 LLM을 선택해주세요.`, true);
+      App.openSettings();
+      return false;
+    }
     if (App.settings.gemini) return true;
-    App.toast(kind === 'text' ? '먼저 Gemini API 키를 등록하거나, 설정에서 로컬 LLM(LM Studio · Ollama)을 선택해주세요.' : '이 기능은 Gemini API 키가 필요합니다 (영상 분석 · 이미지 · AI 음성).', true);
+    App.toast('이 기능은 Gemini API 키가 필요합니다 (영상 직접 분석 · 이미지 생성 · AI 음성).', true);
     App.openSettings();
     return false;
   };
@@ -321,11 +337,34 @@
     return s + stack.reverse().join('');
   }
 
+  /* ───────── 방문자 본인 키 중계 (/api/ai-lab) ─────────
+     ChatGPT · Claude 는 브라우저에서 직접 호출하면 CORS 로 막히므로 이 사이트 서버를 거칩니다.
+     키는 요청에 실려 각 API 로 그대로 전달되고, 서버에는 저장·기록되지 않습니다. */
+  const PROXY_PATH = (C.cloudAI && C.cloudAI.proxy) || '/api/ai-lab';
+  App.proxy = {
+    url() {
+      if (/^https?:\/\//.test(PROXY_PATH)) return PROXY_PATH;
+      if (location.protocol === 'file:') return null; // 파일로 직접 열면 중계 불가
+      return location.origin + PROXY_PATH;
+    },
+    async post(payload) {
+      const url = this.url();
+      if (!url) { const e = new Error('이 페이지를 파일로 직접 열었습니다. ChatGPT · Claude 는 사이트 주소(/tools/sns-ai)로 접속해야 동작합니다.'); e.status = 0; throw e; }
+      let r;
+      try { r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); }
+      catch { const e = new Error('중계 서버에 연결하지 못했습니다. 네트워크를 확인하거나 Gemini · 로컬 LLM 을 사용해주세요.'); e.status = 0; throw e; }
+      let j = null; try { j = await r.json(); } catch {}
+      if (!r.ok || !j || j.error) { const e = new Error((j && j.error) || `중계 서버 오류 (HTTP ${r.status})`); e.status = r.status; throw e; }
+      return j;
+    },
+  };
+
   App.ai = {
     models: null,
     reset() { this.models = null; },
     friendly(e) {
       const m = (e && e.message) || String(e);
+      if (/Anthropic|Claude|ChatGPT|OpenAI/.test(m)) return m; // 중계 서버가 이미 안내 문구를 만들어 줍니다
       if (e?.status === 400 && /api key/i.test(m)) return 'Gemini API 키가 올바르지 않습니다. 설정에서 키를 확인해주세요.';
       if (e?.status === 403) return 'API 키에 권한이 없습니다. Google AI Studio에서 발급한 키인지 확인해주세요.';
       if (e?.status === 429 || /quota|exhausted/i.test(m)) return '요청 한도를 초과했습니다. 잠시 후 다시 시도하거나 결제가 연결된 키를 사용해주세요.';
@@ -363,15 +402,61 @@
       return r.json();
     },
     /** 텍스트 생성. opts: {prompt, system, json, temperature, maxTokens, video, lowRes, parts, cloudOnly} → {text, model}
-        로컬 LLM 모드면 로컬로 보냄. 단, 영상(video) · 이미지(parts) · cloudOnly(영상 분석) 요청은 항상 Gemini */
+        선택한 엔진(Gemini · ChatGPT · Claude · 로컬 LLM)으로 보냄.
+        단, 영상(video) · 이미지(parts) · cloudOnly(영상 분석) 요청은 엔진 선택과 관계없이 항상 Gemini */
     async generate(opts) {
-      if (App.settings.llmEngine === 'local' && !opts.video && !opts.parts && !opts.cloudOnly) {
+      if (opts.video || opts.parts || opts.cloudOnly) {
+        if (!App.settings.gemini) { const e = new Error('영상 직접 분석 · 이미지 입력은 Gemini API 키가 필요합니다. (텍스트 기획 · 마케팅 글은 ChatGPT · Claude · 로컬 LLM으로도 됩니다)'); e.status = 401; throw e; }
+        return this.geminiText(opts);
+      }
+      const eng = this.engine();
+      if (eng === 'local') {
         const messages = [];
         if (opts.system) messages.push({ role: 'system', content: opts.system });
         messages.push({ role: 'user', content: opts.prompt + (opts.json !== false ? '\n\n반드시 설명 없이 유효한 JSON만 출력하세요. (Reply with valid JSON only.)' : '') });
         return App.local.chat(messages, { maxTokens: opts.maxTokens || 8192, temperature: opts.temperature ?? 0.7, json: opts.json !== false, maxContinues: opts.json !== false ? 2 : 3 });
       }
+      if (eng === 'openai' || eng === 'claude') return this.cloudText(opts, eng);
       if (!App.settings.gemini) { const e = new Error('Gemini API 키가 없습니다.'); e.status = 401; throw e; }
+      return this.geminiText(opts);
+    },
+    /** 실제 사용할 텍스트 엔진 — 선택 엔진 키가 없고 Gemini 키가 있으면 Gemini로 대체 */
+    engine() {
+      const eng = App.settings.llmEngine || 'gemini';
+      if (eng === 'local' || eng === 'gemini') return eng;
+      if (eng === 'openai' ? App.settings.openai : App.settings.anthropic) return eng;
+      if (App.settings.gemini) {
+        if (!this._fallback) { this._fallback = true; App.toast(`${eng === 'openai' ? 'ChatGPT' : 'Claude'} 키가 없어 Gemini로 생성합니다. 설정에서 키를 넣어주세요.`); }
+        return 'gemini';
+      }
+      return eng;
+    },
+    /** ChatGPT(OpenAI) · Claude(Anthropic) — 브라우저 CORS 때문에 /api/ai-lab 중계를 거칩니다. 키는 서버에 저장되지 않습니다. */
+    async cloudText(opts, eng) {
+      const isOpen = eng === 'openai';
+      const name = isOpen ? 'ChatGPT' : 'Claude';
+      const key = isOpen ? App.settings.openai : App.settings.anthropic;
+      if (!key) { const e = new Error(`${name} API 키가 없습니다.`); e.status = 401; throw e; }
+      const model = isOpen ? App.settings.openaiModel : App.settings.claudeModel;
+      const json = opts.json !== false;
+      const messages = [{ role: 'user', content: opts.prompt + (json ? '\n\n반드시 설명 없이 유효한 JSON만 출력하세요. (Reply with valid JSON only.)' : '') }];
+      let text = '', used = model;
+      for (let i = 0; i < 3; i++) {
+        let j;
+        try {
+          j = await App.proxy.post({ provider: eng, apiKey: key, model, system: opts.system, messages, json, temperature: opts.temperature ?? 0.7, maxTokens: opts.maxTokens || 8192 });
+        } catch (e) {
+          if (i === 0 && (e.status === 429 || e.status === 500 || e.status === 502 || e.status === 503)) { await App.sleep(2000); continue; }
+          throw e;
+        }
+        text += j.text || ''; used = j.model || model;
+        if (j.finish !== 'length' || !(j.text || '').trim()) break;
+        messages.push({ role: 'assistant', content: j.text }, { role: 'user', content: '이전 답변이 중간에 끊겼습니다. 끊긴 부분부터 이어서 계속 작성해주세요.' });
+      }
+      return { text: text.trim(), model: `${name} · ${used}` };
+    },
+    /** Gemini 텍스트 생성 (영상 · 이미지 입력 포함) */
+    async geminiText(opts) {
       const { text: models } = await this.listModels();
       const parts = [];
       if (opts.video) parts.push({ fileData: { fileUri: opts.video } });
@@ -420,11 +505,22 @@
         const data = this.parseJSON(text);
         if (data && typeof data === 'object') return { data, model };
       }
-      throw new Error('AI가 올바른 JSON을 만들지 못했습니다. 다시 시도해주세요.' + (App.settings.llmEngine === 'local' ? ' (로컬 모델이 작으면 자주 실패합니다. 7B 이상 모델을 권장합니다)' : ''));
+      const eng = this.engine();
+      throw new Error('AI가 올바른 JSON을 만들지 못했습니다. 다시 시도해주세요.' + (eng === 'local' ? ' (로컬 모델이 작으면 자주 실패합니다. 7B 이상 모델을 권장합니다)' : eng === 'gemini' ? '' : ' (모델을 gpt-4o-mini · claude-sonnet-4-5 같은 상위 모델로 바꾸면 나아집니다)'));
     },
-    /** 이미지 생성 → dataURL */
+    /** 이미지 생성 → dataURL
+        ChatGPT 엔진을 골랐고 OpenAI 키가 있으면 gpt-image-1 / dall-e-3 로 먼저 시도하고, 실패하면 Gemini 로 대체 */
     async image(prompt, aspectRatio = '1:1') {
-      if (!App.settings.gemini) { const e = new Error('Gemini API 키가 없습니다.'); e.status = 401; throw e; }
+      if (this.engine() === 'openai' && App.settings.openai) {
+        try {
+          const j = await App.proxy.post({ provider: 'openai', apiKey: App.settings.openai, model: App.settings.openaiImageModel, task: 'image', prompt, aspectRatio });
+          if (j.image) return j.image;
+        } catch (e) {
+          if (!App.settings.gemini) throw new Error(`ChatGPT 이미지 생성에 실패했습니다. ${e.message || ''} Gemini 키를 넣으면 Gemini 이미지로 만들 수 있습니다.`);
+          App.toast('ChatGPT 이미지 생성 실패 → Gemini 로 대체합니다', true);
+        }
+      }
+      if (!App.settings.gemini) { const e = new Error('이미지 생성은 Gemini API 키가 필요합니다. (ChatGPT 엔진을 고르고 OpenAI 키를 넣으면 ChatGPT 이미지로도 만들 수 있습니다)'); e.status = 401; throw e; }
       const { image } = await this.listModels();
       let last;
       for (const model of image) {
@@ -471,7 +567,15 @@
       }
       throw last || new Error('음성 합성 모델을 사용할 수 없습니다.');
     },
+    /** 선택한 엔진으로 연결 확인 */
     async test() {
+      const eng = this.engine();
+      if (eng === 'openai' || eng === 'claude') {
+        const isOpen = eng === 'openai';
+        const j = await App.proxy.post({ provider: eng, apiKey: isOpen ? App.settings.openai : App.settings.anthropic, model: isOpen ? App.settings.openaiModel : App.settings.claudeModel, messages: [{ role: 'user', content: 'Reply with {"ok":true}' }], json: true, maxTokens: 64, temperature: 0 });
+        return { model: `${isOpen ? 'ChatGPT' : 'Claude'} · ${j.model}` };
+      }
+      if (eng === 'local') { const r = await App.local.chat([{ role: 'user', content: 'Reply with {"ok":true} only.' }], { maxTokens: 300, json: true, maxContinues: 1 }); return { model: r.model }; }
       this.reset();
       const m = await this.listModels();
       const { model } = await this.generate({ prompt: 'Reply with {"ok":true}', json: true, maxTokens: 50 });
@@ -678,20 +782,49 @@
       <div class="panel modal-card" role="dialog" aria-modal="true" aria-labelledby="setTitle">
         <button class="x" data-x aria-label="닫기">×</button>
         <h3 id="setTitle">API 키 설정</h3>
-        <p class="hint" style="margin:0 0 16px">키는 이 브라우저에만 저장되며 Google API로만 직접 전송됩니다. 사이트 서버로는 전송되지 않습니다.</p>
+        <p class="hint" style="margin:0 0 16px">키는 이 브라우저에만 저장됩니다. Gemini 키는 Google로 직접, ChatGPT · Claude 키는 이 사이트 중계 서버(/api/ai-lab)를 거쳐 각 API로 전달되며 서버에는 저장되지 않습니다.</p>
         <div class="keybox">
           <div class="field" style="margin:0">
             <label for="kGemini">Gemini API 키 <span class="req" id="kGemReq">*</span></label>
             <div class="keyrow"><input id="kGemini" class="input mono" type="password" value="${App.esc(s.gemini)}" placeholder="AIza..." autocomplete="off" spellcheck="false">
               <button class="btn btn-sm" data-eye="kGemini" type="button">보기</button></div>
-            <span class="hint">분석 · 기획 · 이미지 · 나레이션 · 마케팅 전체에 사용. <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio에서 무료 발급 ↗</a></span>
+            <span class="hint">영상 직접 분석 · 이미지 생성 · Gemini 음성에 필요합니다. <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio에서 무료 발급 ↗</a></span>
           </div>
         </div>
         <div class="keybox">
           <div class="field" style="margin:0">
-            <label>텍스트 AI 엔진</label>
-            ${App.ui.seg('kEngine', [['gemini', 'Gemini (클라우드)', 'API 키'], ['local', '로컬 LLM', 'LM Studio · Ollama · 무료']], App.settings.llmEngine)}
-            <span class="hint" style="margin-top:8px">로컬을 고르면 <b>채널 세팅 · 기획 대본 · 마케팅 글</b>을 내 PC의 LM Studio / Ollama가 만듭니다. <b>영상 분석 · 이미지/영상 생성 · Gemini 음성</b>은 항상 Gemini를 씁니다.</span>
+            <label>텍스트 AI 엔진 <span class="opt">채널 세팅 · 기획 · 마케팅 글</span></label>
+            ${App.ui.seg('kEngine', [['gemini', 'Gemini', 'Google · 무료'], ['openai', 'ChatGPT', 'OpenAI · 본인 키'], ['claude', 'Claude', 'Anthropic · 본인 키'], ['local', '로컬 LLM', 'LM Studio · Ollama']], App.settings.llmEngine)}
+            <span class="hint" style="margin-top:8px">고른 엔진이 <b>채널 세팅 · 기획 대본 · 마케팅 글</b>을 만듭니다. <b>영상 직접 분석 · 이미지 생성 · Gemini 음성</b>은 Gemini 키가 필요합니다.</span>
+          </div>
+          <div id="kOpenaiBox" style="margin-top:14px" ${App.settings.llmEngine === 'openai' ? '' : 'hidden'}>
+            <div class="field" style="margin:0">
+              <label for="kOpenai">ChatGPT (OpenAI) API 키</label>
+              <div class="keyrow"><input id="kOpenai" class="input mono" type="password" value="${App.esc(s.openai)}" placeholder="sk-..." autocomplete="off" spellcheck="false">
+                <button class="btn btn-sm" data-eye="kOpenai" type="button">보기</button></div>
+              <span class="hint"><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI에서 키 발급 ↗</a> · 키는 중계 서버를 거쳐 OpenAI로만 전달되고 저장되지 않습니다.</span>
+            </div>
+            <div class="field" style="margin:10px 0 0"><label for="kOpenaiModel">모델</label>
+              <input id="kOpenaiModel" class="input mono" list="dlOpenai" value="${App.esc(s.openaiModel)}" placeholder="gpt-4o-mini" autocomplete="off" spellcheck="false">
+              <datalist id="dlOpenai">${['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini', 'gpt-4.1', 'o4-mini'].map(m => `<option value="${m}"></option>`).join('')}</datalist>
+            </div>
+            <div class="field" style="margin:10px 0 0"><label for="kOpenaiImage">이미지 모델 <span class="opt">③ 제작 탭</span></label>
+              <input id="kOpenaiImage" class="input mono" list="dlOpenaiImg" value="${App.esc(s.openaiImageModel)}" placeholder="gpt-image-1" autocomplete="off" spellcheck="false">
+              <datalist id="dlOpenaiImg">${['gpt-image-1', 'dall-e-3'].map(m => `<option value="${m}"></option>`).join('')}</datalist>
+              <span class="hint">gpt-image-1은 조직 인증이 필요할 수 있습니다. 실패하면 Gemini 이미지로 자동 대체합니다.</span>
+            </div>
+          </div>
+          <div id="kClaudeBox" style="margin-top:14px" ${App.settings.llmEngine === 'claude' ? '' : 'hidden'}>
+            <div class="field" style="margin:0">
+              <label for="kClaude">Claude (Anthropic) API 키</label>
+              <div class="keyrow"><input id="kClaude" class="input mono" type="password" value="${App.esc(s.anthropic)}" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+                <button class="btn btn-sm" data-eye="kClaude" type="button">보기</button></div>
+              <span class="hint"><a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Anthropic Console에서 키 발급 ↗</a> · Claude는 브라우저 직접 호출이 막혀 있어 중계 서버를 거칩니다. 키는 저장되지 않습니다.</span>
+            </div>
+            <div class="field" style="margin:10px 0 0"><label for="kClaudeModel">모델</label>
+              <input id="kClaudeModel" class="input mono" list="dlClaude" value="${App.esc(s.claudeModel)}" placeholder="claude-sonnet-4-5" autocomplete="off" spellcheck="false">
+              <datalist id="dlClaude">${['claude-sonnet-4-5', 'claude-haiku-4-5', 'claude-opus-4-1'].map(m => `<option value="${m}"></option>`).join('')}</datalist>
+            </div>
           </div>
           <div id="kLocal" style="margin-top:14px" ${App.settings.llmEngine === 'local' ? '' : 'hidden'}>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -733,7 +866,7 @@
           </div>
         </div>
         <div class="field">
-          <label for="kModel">텍스트 모델 <span class="opt">선택</span></label>
+          <label for="kModel">Gemini 텍스트 모델 <span class="opt">선택</span></label>
           <input id="kModel" class="input mono" type="text" value="${App.esc(s.model)}" placeholder="비우면 자동 선택 (최신 gemini-*-flash)">
         </div>
         <div class="field">
@@ -755,6 +888,8 @@
     const close = () => wrap.remove();
     const read = () => ({
       gemini: App.$('#kGemini', wrap).value.trim(), youtube: App.$('#kYoutube', wrap).value.trim(),
+      openai: App.$('#kOpenai', wrap).value.trim(), anthropic: App.$('#kClaude', wrap).value.trim(),
+      openaiModel: App.$('#kOpenaiModel', wrap).value.trim(), claudeModel: App.$('#kClaudeModel', wrap).value.trim(), openaiImageModel: App.$('#kOpenaiImage', wrap).value.trim(),
       oauth: App.$('#kOauth', wrap).value.trim(), model: App.$('#kModel', wrap).value.trim(), voiceServer: App.$('#kVoice', wrap).value.trim(), remember: App.$('#kRemember', wrap).checked,
       llmEngine: App.ui.segVal(wrap, 'kEngine') || 'gemini', llmBackend: App.$('#kBackend', wrap).value,
       lmstudioUrl: App.$('#kLmsUrl', wrap).value.trim(), ollamaUrl: App.$('#kOllUrl', wrap).value.trim(),
@@ -777,7 +912,14 @@
       const row = (name, r, help) => `<span class="vchk ${r.online && !r.auth ? (r.models.length ? 'ok' : 'warn') : r.auth ? 'warn' : 'bad'}">${name} · ${r.auth ? 'API 토큰 필요' : r.online ? (r.models.length ? `연결됨 (모델 ${r.models.length}개)` : '실행 중 · 모델 없음') : `꺼짐 / 접근 불가`}</span>${r.online && !r.auth && r.models.length ? '' : `<span class="hint" style="margin:0">${r.auth ? 'LM Studio → Developer → Server Settings의 API 토큰을 위에 입력' : help}</span>`}`;
       stat.innerHTML = row('LM Studio', p.lmstudio, 'Local Server 시작 + Enable CORS + 모델 로드') + row('Ollama', p.ollama, p.ollama.online ? 'ollama pull gemma3' : 'Ollama 실행 (필요시 OLLAMA_ORIGINS)');
     }
-    const syncEngine = () => { const local = App.ui.segVal(wrap, 'kEngine') === 'local'; App.$('#kLocal', wrap).hidden = !local; App.$('#kGemReq', wrap).textContent = local ? '(영상 분석·이미지용)' : '*'; if (local) detectLocal(); };
+    const syncEngine = () => {
+      const eng = App.ui.segVal(wrap, 'kEngine') || 'gemini';
+      App.$('#kLocal', wrap).hidden = eng !== 'local';
+      App.$('#kOpenaiBox', wrap).hidden = eng !== 'openai';
+      App.$('#kClaudeBox', wrap).hidden = eng !== 'claude';
+      App.$('#kGemReq', wrap).textContent = eng === 'gemini' ? '*' : eng === 'local' ? '(선택)' : '(영상 분석 · 이미지용)';
+      if (eng === 'local') detectLocal();
+    };
     wrap.addEventListener('change', e => { if (e.target.name === 'kEngine') syncEngine(); });
     wrap.addEventListener('click', async e => {
       if (e.target === wrap || e.target.closest('[data-x]')) return close();
@@ -786,27 +928,42 @@
       if (e.target.closest('[data-detect]')) return detectLocal();
       if (e.target.closest('[data-save]')) {
         const v = read();
-        if (!v.gemini && v.llmEngine !== 'local') { msg('Gemini API 키를 입력하거나 텍스트 AI 엔진을 로컬 LLM으로 고르세요.', true); return; }
+        const need = v.llmEngine === 'openai' ? (!v.openai && 'ChatGPT (OpenAI) API 키를 입력해주세요.')
+          : v.llmEngine === 'claude' ? (!v.anthropic && 'Claude (Anthropic) API 키를 입력해주세요.')
+            : v.llmEngine === 'local' ? false : (!v.gemini && 'Gemini API 키를 입력해주세요.');
+        if (need) { msg(need, true); return; }
         App.settings.save(v); App.toast('설정을 저장했습니다'); close(); return;
       }
       if (e.target.closest('[data-test]')) {
         const btn = e.target.closest('[data-test]'); const v = read();
-        if (!v.gemini && v.llmEngine !== 'local') { msg('Gemini API 키를 입력해주세요.', true); return; }
+        const need = v.llmEngine === 'openai' ? (!v.openai && 'ChatGPT (OpenAI) API 키를 입력해주세요.')
+          : v.llmEngine === 'claude' ? (!v.anthropic && 'Claude (Anthropic) API 키를 입력해주세요.')
+            : v.llmEngine === 'local' ? false : (!v.gemini && 'Gemini API 키를 입력해주세요.');
+        if (need) { msg(need, true); return; }
         App.settings.save(v); App.ui.busy(btn, true, '테스트 중');
         const out = [];
+        const testGemini = async (label) => {
+          try {
+            App.ai.reset(); const m = (await App.ai.listModels()).text[0];
+            await App.ai.call(m, { contents: [{ role: 'user', parts: [{ text: 'Reply with {"ok":true}' }] }], generationConfig: { maxOutputTokens: 50, responseMimeType: 'application/json' } });
+            out.push(`✅ ${label} — <b>${App.esc(m)}</b>`);
+          } catch (er) { out.push(`❌ ${label} — ${App.esc(App.ai.friendly(er))}`); }
+        };
         try {
           if (v.llmEngine === 'local') {
             try { const r = await App.local.chat([{ role: 'user', content: 'Reply with {"ok":true} only.' }], { maxTokens: 300, json: true, maxContinues: 1 }); out.push(`✅ 로컬 LLM — <b>${App.esc(r.model)}</b>`); }
             catch (er) { out.push(`❌ 로컬 LLM — ${App.esc(er.message)}`); }
           }
-          if (v.gemini) {
+          if (v.llmEngine === 'openai' || v.llmEngine === 'claude') {
+            const isOpen = v.llmEngine === 'openai';
+            const name = isOpen ? 'ChatGPT' : 'Claude';
             try {
-              App.ai.reset(); const m = (await App.ai.listModels()).text[0];
-              await App.ai.call(m, { contents: [{ role: 'user', parts: [{ text: 'Reply with {"ok":true}' }] }], generationConfig: { maxOutputTokens: 50, responseMimeType: 'application/json' } });
-              out.push(`✅ Gemini — <b>${App.esc(m)}</b>`);
-            }
-            catch (er) { out.push(`❌ Gemini — ${App.esc(App.ai.friendly(er))}`); }
+              const j = await App.proxy.post({ provider: v.llmEngine, apiKey: isOpen ? v.openai : v.anthropic, model: isOpen ? (v.openaiModel || 'gpt-4o-mini') : (v.claudeModel || 'claude-sonnet-4-5'), messages: [{ role: 'user', content: 'Reply with {"ok":true}' }], json: true, maxTokens: 64, temperature: 0 });
+              out.push(`✅ ${name} — <b>${App.esc(j.model)}</b>`);
+            } catch (er) { out.push(`❌ ${name} — ${App.esc(er.message)}`); }
           }
+          if (v.llmEngine === 'gemini') await testGemini('Gemini');
+          else if (v.gemini) await testGemini('Gemini (영상 분석 · 이미지 · 음성용)');
           if (v.youtube) { try { await App.yt.get('videos', { part: 'id', id: 'dQw4w9WgXcQ' }); out.push('✅ YouTube Data API'); } catch (er) { out.push(`❌ YouTube Data API (${App.esc(er.message)})`); } }
           msg(out.join('<br>'), out.some(x => x.startsWith('❌')));
         } finally { App.ui.busy(btn, false); }
@@ -822,7 +979,7 @@
     });
     document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); } });
     setTimeout(() => App.$('#kGemini', wrap).focus(), 50);
-    if (App.settings.llmEngine === 'local') syncEngine();
+    if (App.settings.llmEngine !== 'gemini') syncEngine();
   };
 
   /* ───────── 초기화 ───────── */
@@ -837,7 +994,7 @@
     App.$('#brandLogo').innerHTML = b.logoUrl ? `<img src="${App.esc(b.logoUrl)}" alt="">` : App.esc(b.short || 'AI');
     const f = C.footer || {};
     App.$('#footer').innerHTML = `${App.esc(f.text || '')}${(f.links || []).map(l => `<a href="${App.esc(l.url)}" target="_blank" rel="noopener">${App.esc(l.label)}</a>`).join('')}
-      <div style="margin-top:6px">Powered by <a href="https://ai.google.dev/" target="_blank" rel="noopener" style="margin:0">Google Gemini</a></div>`;
+      <div style="margin-top:6px">Powered by <a href="https://ai.google.dev/" target="_blank" rel="noopener" style="margin:0">Gemini</a> · ChatGPT · Claude · 로컬 LLM</div>`;
   }
   function buildNav() {
     const tabs = (C.tabs || Object.keys(TAB_META)).filter(t => TAB_META[t]);
@@ -847,12 +1004,15 @@
     return tabs;
   }
   function refreshKeyState() {
-    const local = App.settings.llmEngine === 'local', gem = !!App.settings.gemini;
-    const has = gem || local;
+    const eng = App.settings.llmEngine, gem = !!App.settings.gemini;
+    const own = eng === 'local' ? true : eng === 'openai' ? !!App.settings.openai : eng === 'claude' ? !!App.settings.anthropic : gem;
+    const has = own || gem;
+    const NAME = { gemini: 'Gemini', openai: 'ChatGPT', claude: 'Claude', local: '로컬 LLM' };
+    const label = own ? NAME[eng] + (eng !== 'gemini' && gem ? ' + Gemini' : '') : gem ? 'Gemini (대체)' : 'API 키 필요';
     const pill = App.$('#keyPill');
     pill.className = 'pill ' + (has ? 'on' : 'off');
-    pill.innerHTML = `<span class="dot"></span>${local ? (gem ? '로컬 LLM + Gemini' : '로컬 LLM') : gem ? 'Gemini 연결됨' : 'API 키 필요'}`;
-    pill.title = local ? '텍스트는 LM Studio / Ollama, 영상 분석·이미지는 Gemini' : '';
+    pill.innerHTML = `<span class="dot"></span>${label}`;
+    pill.title = eng === 'local' ? '텍스트는 LM Studio / Ollama, 영상 분석·이미지는 Gemini' : `${NAME[eng]} 엔진 · 영상 분석·이미지·음성은 Gemini 키 필요`;
     App.$('#keyBanner').hidden = has;
   }
 

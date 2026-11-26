@@ -1,11 +1,22 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { PORTFOLIO } from "@/lib/portfolio";
-import { ImageStreamHero } from "@/components/ui/image-stream-hero";
+import PortfolioCorridor from "@/components/PortfolioCorridor";
+import useModalHistory from "@/lib/useModalHistory";
 
-function Card({ item, onOpen }) {
+// 손가락으로 카드를 밀어 넘긴 뒤 손을 떼면 상세창이 열리지 않도록
+// 누른 지점에서 조금이라도 움직였는지 기억한다.
+const DRAG_TOLERANCE = 8;
+
+function Card({ item, clone, onTouchStart, onTouchMove, onOpen }) {
   return (
-    <button className="work" onClick={() => onOpen(item)} aria-label={`${item.title} 자세히 보기`}>
+    <button
+      className={`work${clone ? " clone" : ""}`}
+      onPointerDown={onTouchStart}
+      onPointerMove={onTouchMove}
+      onClick={() => onOpen(item)}
+      aria-label={`${item.title} 자세히 보기`}
+    >
       <span className="thumb">
         <img src={item.images[0]} alt={item.title} loading="lazy" />
         <span className="badge">상세보기</span>
@@ -19,12 +30,39 @@ function Card({ item, onOpen }) {
 }
 
 function Row({ items, reverse, onOpen }) {
+  // 마키 애니메이션을 위해 한 벌을 더 붙인다. 모바일에서는 복제분을 숨기고 직접 스크롤한다.
   const loop = [...items, ...items];
+  const drag = useRef({ x: 0, y: 0, moved: false });
+
+  const onTouchStart = (e) => {
+    drag.current = { x: e.clientX, y: e.clientY, moved: false };
+  };
+
+  const onTouchMove = (e) => {
+    const d = drag.current;
+    if (d.moved) return;
+    if (Math.abs(e.clientX - d.x) > DRAG_TOLERANCE || Math.abs(e.clientY - d.y) > DRAG_TOLERANCE) {
+      d.moved = true;
+    }
+  };
+
+  const handleOpen = (item) => {
+    if (drag.current.moved) return; // 밀어서 넘긴 동작이면 열지 않는다
+    onOpen(item);
+  };
+
   return (
     <div className={`marquee${reverse ? " rev" : ""}`}>
       <div className="marquee-track">
         {loop.map((it, i) => (
-          <Card key={`${it.id}-${i}`} item={it} onOpen={onOpen} />
+          <Card
+            key={`${it.id}-${i}`}
+            item={it}
+            clone={i >= items.length}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onOpen={handleOpen}
+          />
         ))}
       </div>
     </div>
@@ -33,74 +71,25 @@ function Row({ items, reverse, onOpen }) {
 
 export default function Portfolio() {
   const [open, setOpen] = useState(null);
+  const closeModal = useModalHistory(open, setOpen);
   const half = Math.ceil(PORTFOLIO.length / 2);
 
-  // 포트폴리오 데이터에서 이미지들을 추출하여 ImageStreamHero에 전달할 데이터 생성
-  // 각 프로젝트의 메인 썸네일(첫 번째 이미지)들을 모아서 보여줍니다.
-  const streamImages = PORTFOLIO.map(p => ({
-    src: p.images[0],
-    alt: p.title
-  }));
-
-  // 만약 이미지가 부족하다면 서브 이미지들도 추가
-  if (streamImages.length < 8) {
-    PORTFOLIO.forEach(p => {
-      if (p.images[1]) streamImages.push({ src: p.images[1], alt: p.title });
-    });
-  }
+  // 3D 회랑에 흐르는 화면들 (첫 번째 이미지 = 대표 이미지)
+  const corridorItems = useMemo(
+    () =>
+      PORTFOLIO.map((p) => ({
+        img: p.images[0],
+        title: p.title,
+        item: p,
+      })),
+    []
+  );
 
   return (
     <section className="section portfolio-section" id="portfolio" style={{ paddingTop: 0 }}>
-      {/* 
-        새롭게 추가된 ImageStreamHero 영역
-        고객님의 실제 작업물 이미지(PORTFOLIO)들이 입체적으로 흘러나옵니다.
-      */}
-      <ImageStreamHero
-        images={streamImages}
-        style={{ 
-          height: '600px', 
-          width: '100%',
-          backgroundColor: '#fdfbf7', 
-          borderBottom: '1px solid #eaeaea' 
-        }}
-      >
-        <div style={{ 
-          position: 'relative', 
-          zIndex: 10, 
-          display: 'flex', 
-          height: '100%', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
-          padding: '4rem 0', 
-          textAlign: 'center' 
-        }}>
-          <div style={{ padding: '0 1.5rem', marginTop: '2rem' }}>
-            <h1 style={{ 
-              fontSize: '2.5rem', 
-              fontWeight: 800, 
-              letterSpacing: '-0.025em', 
-              color: '#333',
-              lineHeight: 1.2
-            }}>
-              우리가 만들어 온<br />
-              브랜드 경험들.
-            </h1>
-          </div>
-          <p style={{ 
-            maxWidth: '28rem', 
-            padding: '0 1.5rem', 
-            fontSize: '0.875rem', 
-            color: '#666', 
-            lineHeight: 1.6,
-            marginBottom: '2rem'
-          }}>
-            단순히 화려한 디자인을 넘어서, 브랜드의 진짜 '이야기'가 사람들에게 전달되도록 설계된 작업물들을 만나보세요.
-          </p>
-        </div>
-      </ImageStreamHero>
+      <PortfolioCorridor items={corridorItems} onOpen={setOpen} />
 
-      <div className="wrap" style={{ marginTop: '5rem' }}>
+      <div className="wrap" style={{ marginTop: "4.5rem" }}>
         <div className="section-head">
           <p className="label">Selected Works</p>
           <h2>이미 만들어 온 것들</h2>
@@ -113,9 +102,11 @@ export default function Portfolio() {
       <Row items={PORTFOLIO.slice(half)} reverse onOpen={setOpen} />
 
       {open && (
-        <div className="modal-bg" onClick={() => setOpen(null)} role="dialog" aria-modal="true">
+        <div className="modal-bg" onClick={closeModal} role="dialog" aria-modal="true">
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button className="close" onClick={() => setOpen(null)} aria-label="닫기">×</button>
+            <button className="close" onClick={closeModal} aria-label="닫기">
+              ×
+            </button>
             <span className="tag-badge">{open.tag}</span>
             <h3>{open.title}</h3>
 
@@ -133,9 +124,11 @@ export default function Portfolio() {
               <div className="info-card">
                 <p className="label">어떤 기능이 들어갔나요</p>
                 <ul>
-                  {open.features.filter(Boolean).length
-                    ? open.features.filter(Boolean).map((f, i) => <li key={i}>{f}</li>)
-                    : <li>내용을 입력해주세요.</li>}
+                  {open.features.filter(Boolean).length ? (
+                    open.features.filter(Boolean).map((f, i) => <li key={i}>{f}</li>)
+                  ) : (
+                    <li>내용을 입력해주세요.</li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -146,7 +139,9 @@ export default function Portfolio() {
 
             {open.liveUrl && (
               <p style={{ marginTop: 22, textAlign: "center" }}>
-                <a className="btn small" href={open.liveUrl} target="_blank" rel="noreferrer">실제 사이트 보기</a>
+                <a className="btn small" href={open.liveUrl} target="_blank" rel="noreferrer">
+                  실제 사이트 보기
+                </a>
               </p>
             )}
           </div>

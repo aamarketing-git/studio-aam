@@ -11,7 +11,7 @@ window.SITE_CONFIG = {
     short: 'SA',                           // 로고 박스 안 글자 (logoUrl이 없을 때)
     logoUrl: '',                           // 로고 이미지 경로 (예: 'assets/logo.png')
     tagline: '분석 → 기획 → 제작·업로드 → 마케팅',
-    description: '유튜브 벤치마킹 분석부터 숏폼 기획·나레이션·영상 제작·업로드, SNS·블로그·뉴스레터 마케팅까지 내 Gemini API 키로 한 번에 자동화합니다.',
+    description: '유튜브 벤치마킹 분석부터 숏폼 기획·나레이션·영상 제작·업로드, SNS·블로그·뉴스레터 마케팅까지 내 Gemini · ChatGPT · Claude 키 또는 내 PC 로컬 모델로 한 번에 자동화합니다.',
   },
 
   // ── 색상 테마 ──────────────────────────────────────────
@@ -47,10 +47,20 @@ window.SITE_CONFIG = {
   voiceEngine: 'cloud',                    // 기본 방식: 'cloud'(설치 없음) · 'local'(내 PC Qwen3-TTS)
   cloudVoiceModel: 'qwen-audio-3.1-tts-flash', // 클라우드 합성 모델 (flash=저렴·빠름 / plus=고품질)
 
+  // ── 클라우드 AI (방문자 본인 키 · 중계) ────────────────
+  // ChatGPT · Claude 는 브라우저 직접 호출이 CORS 로 막혀 이 사이트의 중계 라우트를 거칩니다.
+  // 키는 방문자가 설정에서 넣은 것만 쓰고 서버에 저장하지 않습니다 (운영자 과금 0원).
+  cloudAI: {
+    proxy: '/api/ai-lab',                  // Next.js API 라우트 (app/api/ai-lab/route.js)
+    openaiModel: 'gpt-4o-mini',            // ChatGPT 기본 모델
+    claudeModel: 'claude-sonnet-4-5',      // Claude 기본 모델
+    openaiImageModel: 'gpt-image-1',       // ChatGPT 엔진 + OpenAI 키로 이미지 생성 시 (dall-e-3 가능)
+  },
+
   // ── 로컬 LLM (LM Studio · Ollama) ──────────────────────
   // 채널 세팅 · 기획 대본 · 마케팅 글을 방문자 PC의 로컬 모델로 생성 (영상 분석 · 이미지/영상 생성은 항상 Gemini)
   localLLM: {
-    defaultEngine: 'gemini',               // 첫 방문 기본값: 'gemini' | 'local'
+    defaultEngine: 'gemini',               // 첫 방문 기본값: 'gemini' | 'openai' | 'claude' | 'local'
     lmstudioUrl: 'http://127.0.0.1:1234',  // LM Studio Local Server (Enable CORS 필요)
     ollamaUrl: 'http://127.0.0.1:11434',   // Ollama (localhost 외 주소에서 열면 OLLAMA_ORIGINS 필요)
     numCtx: 16384,                         // Ollama 컨텍스트 길이 (기본 4096은 긴 프롬프트가 잘림)

@@ -13,9 +13,9 @@ const FEATURES = [
 ];
 
 const MODES = [
-  { title: "내 API 키로", desc: "Google AI Studio에서 무료로 받은 Gemini 키(필수)와 YouTube Data API 키(선택)를 넣어 바로 사용" },
+  { title: "내 API 키로", desc: "Gemini · ChatGPT · Claude 키 중 하나를 넣으면 바로 사용. Gemini 키는 영상 분석·이미지 생성에 필요합니다" },
   { title: "내 PC 로컬 모델로", desc: "LM Studio · Ollama를 켜 두면 채널·기획·마케팅 글을 키 없이 내 컴퓨터가 생성" },
-  { title: "데이터는 내 브라우저에만", desc: "키와 결과물은 방문자 브라우저에만 저장되고 AAM 서버로 전송되지 않습니다" },
+  { title: "데이터는 내 브라우저에만", desc: "키와 결과물은 방문자 브라우저에만 저장되고 AAM 서버에 보관되지 않습니다" },
 ];
 
 export default function AiMarketingLab() {
@@ -27,7 +27,7 @@ export default function AiMarketingLab() {
           <h2>AI 마케팅 자동화, 직접 써보세요</h2>
           <p>
             AAM이 실제 작업에 쓰는 유튜브·SNS 자동화 도구를 공개합니다. 분석부터 기획, 영상 제작, 마케팅 글까지 —
-            가입 없이 내 키나 내 PC의 로컬 모델로 바로 체험할 수 있습니다.
+            가입 없이 Gemini · ChatGPT · Claude 키나 내 PC의 로컬 모델로 바로 체험할 수 있습니다.
           </p>
         </div>
 

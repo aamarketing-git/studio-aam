@@ -198,11 +198,11 @@
     $('#chTopic', root).classList.remove('invalid');
     S.busy = true; S.images = {};
     const btn = $('#chGen', root); ui.busy(btn, true, '생성 중…');
-    const steps = ['Gemini 연결', '채널 브랜딩 8대 항목 생성', '명세 규칙 검증 · 글자 수 최적화'];
+    const steps = ['AI 엔진 연결', '채널 브랜딩 8대 항목 생성', '명세 규칙 검증 · 글자 수 최적화'];
     const out = $('#chOut', root);
     try {
       ui.progress(out, '채널 세팅 생성 중', steps, 0);
-      await App.ai.listModels();
+      if (App.ai.engine() === 'gemini') await App.ai.listModels();
       let res;
       for (let attempt = 0; attempt < 2; attempt++) {
         ui.progress(out, '채널 세팅 생성 중', steps, 1, attempt ? '재생성' : '');

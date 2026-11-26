@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
 import PlannerPanel from "./PlannerPanel";
+import useModalHistory from "@/lib/useModalHistory";
 
 // 기획실 섹션까지 내려오지 못하고 이탈하는 사람을 잡는다.
 export default function FloatingPlanner() {
   const [open, setOpen] = useState(false);
+  const closeModal = useModalHistory(open, setOpen);
 
   return (
     <>
@@ -17,7 +19,7 @@ export default function FloatingPlanner() {
       </button>
 
       {open && (
-        <div className="modal-bg" onClick={() => setOpen(false)} role="dialog" aria-modal="true">
+        <div className="modal-bg" onClick={closeModal} role="dialog" aria-modal="true">
           <div
             className="modal"
             onClick={(e) => e.stopPropagation()}
@@ -25,7 +27,7 @@ export default function FloatingPlanner() {
           >
             <button
               className="close"
-              onClick={() => setOpen(false)}
+              onClick={closeModal}
               aria-label="닫기"
               style={{ color: "#fff", zIndex: 2 }}
             >
